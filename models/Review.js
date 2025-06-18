@@ -4,7 +4,7 @@ const ReviewSchema = new mongoose.Schema(
 	{
 		venue: { type: mongoose.Schema.Types.ObjectId, ref: "Venue", required: true },
 		author: String,
-		rating: { type: Number, required: true },
+		rating: { type: Number, required: false, min: 0, max: 5 },
 		text: { type: String, required: true },
 		date: Date,
 		sentiment: {
