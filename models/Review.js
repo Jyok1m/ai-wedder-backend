@@ -9,8 +9,8 @@ const ReviewSchema = new mongoose.Schema(
 		date: Date,
 		sentiment: {
 			type: String,
-			enum: ["positive", "negative", "mixed"],
-			default: "mixed",
+			enum: ["positive", "negative", "neutral"],
+			default: "neutral",
 		},
 		aiConfidenceScore: Number,
 		source: String, // e.g. 'mariages.net'
