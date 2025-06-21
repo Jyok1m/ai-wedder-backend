@@ -14,7 +14,7 @@ const ReviewSchema = new mongoose.Schema(
 		},
 		aiSentiment: String,
 		aiConfidenceScore: Number,
-		aiClusters: [String], // e.g. ['wedding', 'event', 'party']
+		aiClusters: [{ label: String, score: Number }], // e.g. ['wedding', 'event', 'party']
 		source: String, // e.g. 'mariages.net'
 		createdAt: { type: Date, default: Date.now },
 	},
