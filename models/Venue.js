@@ -14,6 +14,8 @@ const VenueSchema = new mongoose.Schema(
 		averageRating: Number,
 		reviewCount: Number,
 		summary: String, // AI-generated summary
+		keyPoints: String, // AI-generated key points
+		globalScore: Number, // AI-generated global score
 		clusterId: Number, // for clustering purposes
 	},
 	{
