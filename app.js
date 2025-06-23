@@ -8,6 +8,7 @@ var logger = require("morgan");
 
 var indexRouter = require("./routes/index");
 var scraperRouter = require("./routes/scraper");
+var cateringRouter = require("./routes/catering");
 
 var app = express();
 var cors = require("cors");
@@ -21,5 +22,6 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 app.use("/scraper", scraperRouter);
+app.use("/catering", cateringRouter);
 
 module.exports = app;

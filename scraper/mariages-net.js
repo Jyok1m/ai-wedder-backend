@@ -1,4 +1,5 @@
 const { chromium } = require("playwright");
+const Venue = require("../models/Venue");
 
 const scrapData = async () => {
 	const browser = await chromium.launch({ headless: false });
@@ -154,5 +155,53 @@ const scrapData = async () => {
 
 	return allData;
 };
+
+const scrapDataV2 = async () => {
+	const venues = await Venue.find().select("url").lean();
+	const venueUrls = venues.map((venue) => venue.url);
+
+	const browser = await chromium.launch({ headless: false });
+	const page = await browser.newPage();
+
+	await page.goto(venueUrls[0], { waitUntil: "domcontentloaded", timeout: 10000 });
+
+	try {
+		await page.click("#onetrust-accept-btn-handler", { timeout: 2000 });
+	} catch (e) {
+		console.log("⚠️ Pas de bannière cookies ou timeout");
+	}
+
+	for (const url of venueUrls) {
+		try {
+			const response = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 10000 });
+			if (!response || !response.ok()) {
+				console.warn(`❌ HTTP ${response?.status()} – page ignorée`);
+				continue;
+			}
+
+			const { imageUrl, traiteurName } = await page.$eval("img[srcset]", (img) => {
+				const srcset = img.getAttribute("srcset");
+				const urls = srcset.split(",").map((s) => s.trim().split(" ")[0]);
+				const highestQualityUrl = urls[urls.length - 1];
+				const alt = img.getAttribute("alt") || "traiteur";
+
+				return {
+					imageUrl: highestQualityUrl,
+					traiteurName: alt.replace(/[^a-z0-9]/gi, "_").toLowerCase(), // nettoyage pour le nom de fichier
+				};
+			});
+
+			await Venue.updateOne({ url }, { imageUrl });
+		} catch (err) {
+			console.warn(`⚠️ Échec pour ${url} : ${err.message}`);
+			continue;
+		}
+	}
+
+	await browser.close();
+	return console.log("✅ Scraping terminé");
+};
+
+// scrapDataV2();
 
 module.exports = { scrapData };

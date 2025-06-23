@@ -17,6 +17,7 @@ const VenueSchema = new mongoose.Schema(
 		aiKeyPoints: String, // AI-generated key points
 		aiGlobalScore: Number, // AI-generated global score
 		clusterId: Number, // for clustering purposes
+		imageUrl: String, // URL to an image of the venue
 	},
 	{
 		timestamps: true, // Automatically adds createdAt and updatedAt fields
