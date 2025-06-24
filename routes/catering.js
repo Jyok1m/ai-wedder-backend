@@ -4,16 +4,22 @@ var router = express.Router();
 const Venue = require("../models/Venue");
 
 // GET all catering companies
-router.get("/all/page", async (req, res) => {
-	const { page = 1 } = req.query;
-	const skip = (page - 1) * 10;
+router.get("/:queryType", async (req, res) => {
+	const { queryType } = req.params;
 
 	try {
-		const cateringCompanies = await Venue.find()
-			.skip(skip)
-			.select("name imageUrl url averageRating location aiGlobalScore aiKeyPoints aiSummary")
-			.lean();
-			
+		let query = {};
+
+		if (["Ille et Vilaine", "Côtes d'Armor"].includes(queryType)) {
+			query = { "location.region": queryType };
+		} else if (queryType !== "all") {
+			query = { $and: [{ "location.region": { $ne: "Ille et Vilaine" } }, { "location.region": { $ne: "Côtes d'Armor" } }] };
+		}
+
+		console.log("Query for catering companies:", query);
+
+		const cateringCompanies = await Venue.find(query).select("name imageUrl url averageRating location aiGlobalScore aiKeyPoints aiSummary").lean();
+
 		const formatted = cateringCompanies.map((c) => ({
 			...c,
 			city: !c?.location.region ? "N/A" : c?.location.city,
