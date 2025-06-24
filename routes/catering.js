@@ -16,9 +16,10 @@ router.get("/:queryType", async (req, res) => {
 			query = { $and: [{ "location.region": { $ne: "Ille et Vilaine" } }, { "location.region": { $ne: "Côtes d'Armor" } }] };
 		}
 
-		console.log("Query for catering companies:", query);
-
-		const cateringCompanies = await Venue.find(query).select("name imageUrl url averageRating location aiGlobalScore aiKeyPoints aiSummary").lean();
+		const cateringCompanies = await Venue.find(query)
+			.sort({ aiGlobalScore: -1 })
+			.select("name imageUrl url averageRating location aiGlobalScore aiKeyPoints aiSummary")
+			.lean();
 
 		const formatted = cateringCompanies.map((c) => ({
 			...c,
