@@ -147,6 +147,4 @@ async function autoScroll(page) {
 	});
 }
 
-scrapData();
-
 module.exports = { scrapData };
