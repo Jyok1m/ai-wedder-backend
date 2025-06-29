@@ -8,7 +8,7 @@ const scrapData = async () => {
 	let allData = [];
 
 	const regions = [
-		// "https://www.mariages.net/busc.php?id_grupo=2&id_sector=5&id_region=26&id_provincia=447&id_poblacion=&id_geozona=&geoloc=0&latitude=&longitude=&isBrowseByImagesEnabled=&keyword=&faqs%5B%5D=&capacityRange%5B%5D=&txtStrSearch=Traiteur+mariage&txtLocSearch=Ille+et+Vilaine",
+		"https://www.mariages.net/busc.php?id_grupo=2&id_sector=5&id_region=26&id_provincia=447&id_poblacion=&id_geozona=&geoloc=0&latitude=&longitude=&isBrowseByImagesEnabled=&keyword=&faqs%5B%5D=&capacityRange%5B%5D=&txtStrSearch=Traiteur+mariage&txtLocSearch=Ille+et+Vilaine",
 		"https://www.mariages.net/busc.php?id_grupo=2&id_sector=5&id_region=&id_provincia=435&id_poblacion=&id_geozona=&geoloc=&latitude=&longitude=&isBrowseByImagesEnabled=&keyword=&faqs%5B%5D=&capacityRange%5B%5D=&txtStrSearch=Traiteur+mariage&txtLocSearch=Côtes+d%27Armor",
 		"https://www.mariages.net/busc.php?id_grupo=2&id_sector=5&id_region=24&id_provincia=&id_poblacion=&id_geozona=&geoloc=&latitude=&longitude=&isBrowseByImagesEnabled=&keyword=&faqs%5B%5D=&capacityRange%5B%5D=&txtStrSearch=Traiteur+mariage&txtLocSearch=Basse+-+Normandie",
 	];
