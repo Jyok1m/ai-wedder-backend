@@ -10,26 +10,26 @@ router.get("/mariages-net", async (req, res) => {
 		console.log("🔄 Démarrage du scraping de mariages.net...");
 		const start = Date.now();
 
-		const allData = await scraper.scrapData();
+		const allTraiteurs = await scraper.scrapData();
 
-		for (const item of allData) {
-			const [city, region] = item.location?.split(",").map((s) => s.trim()) || [];
+		for (const traiteur of allTraiteurs) {
+			const [city, region] = traiteur.location?.split(",").map((s) => s.trim()) || [];
 
 			// 1. Sauvegarder ou mettre à jour la Venue
 			const venue = await Venue.findOneAndUpdate(
-				{ name: item.name, url: item.url },
+				{ name: traiteur.name, url: traiteur.url },
 				{
-					name: item.name,
-					url: item.url,
+					name: traiteur.name,
+					url: traiteur.url,
 					location: { city, region },
-					averageRating: isNaN(parseFloat(item.avgRating)) ? undefined : parseFloat(item.avgRating),
-					reviewCount: item.reviewCount,
-				},
-				{ new: true, upsert: true, setDefaultsOnInsert: true }
+					averageRating: isNaN(parseFloat(traiteur.avgRating)) ? undefined : parseFloat(traiteur.avgRating),
+					reviewCount: traiteur.reviewCount,
+					imageUrl: traiteur.imageUrl,
+				}
 			);
 
 			// 2. Sauvegarder chaque Review liée
-			for (const review of item.reviews || []) {
+			for (const review of traiteur.reviews || []) {
 				const alreadyExists = await Review.findOne({
 					venue: venue._id,
 					author: review.author,
@@ -45,7 +45,6 @@ router.get("/mariages-net", async (req, res) => {
 					text: review.description,
 					date: review.date ? new Date(review.date.split("/").reverse().join("-")) : null,
 					source: "mariages.net",
-					// Optionnel : sentiment et aiConfidenceScore seront ajoutés plus tard par ton microservice Flask
 				});
 			}
 		}
