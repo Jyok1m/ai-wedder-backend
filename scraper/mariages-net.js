@@ -11,16 +11,15 @@ const scrapData = async () => {
 	];
 
 	// Access the first region and disable the cookie banner
-	await page.goto(regions[0], { waitUntil: "domcontentloaded", timeout: 5000 });
-	const cookiesBanner = await page.$("#onetrust-banner-sdk");
-	if (cookiesBanner) await page.click("#onetrust-accept-btn-handler", { timeout: 2000 });
+	await page.goto(regions[0], { waitUntil: "domcontentloaded", timeout: 10000 });
+	await page.click("#onetrust-accept-btn-handler", { timeout: 5000 });
 
 	const allTraiteurs = [];
 
 	// Initiate region loop
 	for (const regionUrl of regions) {
 		// Go to the region page search page
-		await page.goto(regionUrl, { waitUntil: "domcontentloaded", timeout: 5000 });
+		await page.goto(regionUrl, { waitUntil: "domcontentloaded", timeout: 10000 });
 
 		// Once on the search page, retrieve each pagination link and insert the first one (regionUrl)
 		let paginationLinks = await page.$$eval("button[data-page-number]", (buttons) => buttons.map((btn) => btn.getAttribute("data-href")));
@@ -29,34 +28,58 @@ const scrapData = async () => {
 		// For each pagination link, go to the page and retrieve the data
 		for (const url of paginationLinks) {
 			// We go to the page
-			const response = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 5000 });
+			const response = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 10000 });
 			if (!response || !response.ok()) {
 				console.warn(`HTTP ${response?.status()} – page ignorée`);
 				continue;
 			}
 
 			// Wait for the vendor tiles to load
-			await page.waitForSelector("li.vendorTile", { timeout: 2500 });
+			let res1 = null;
+			let res2 = null;
 
-			// Once loaded, retrieve the data from each vendor tile
-			const data = await page.$$eval("li.vendorTile", (cards) =>
-				cards.map((card) => {
-					const name = card.querySelector(".vendorTile__title").textContent.trim();
-					const url = card.querySelector(".vendorTile__title").getAttribute("href");
-					const location = card.querySelector(".vendorTile__location")?.textContent?.replace("·", "").trim();
-					return { name, url, reviewsUrl: `${url}/avis`, location };
-				})
-			);
+			try {
+				res1 = await page.waitForSelector("li.vendorTile", { timeout: 2000 });
+			} catch (e) {
+				// Pas de vendorTile
+				console.warn("Pas de vendorTile trouvé sur cette page.");
+			}
 
-			// Add the data to the allTraiteurs array
-			allTraiteurs.push(...data);
+			try {
+				res2 = await page.waitForSelector("li.vendorTilePena", { timeout: 2000 });
+			} catch (e) {
+				// Pas de vendorTilePena
+				console.warn("Pas de vendorTilePena trouvé sur cette page.");
+			}
+
+			if (res1) {
+				const data = await page.$$eval("li.vendorTile", (cards) =>
+					cards.map((card) => {
+						const name = card.querySelector(".vendorTile__title")?.textContent?.trim();
+						const url = card.querySelector(".vendorTile__title")?.getAttribute("href");
+						const location = card.querySelector(".vendorTile__location")?.textContent?.replace("·", "").trim();
+						return { name, url, reviewsUrl: `${url}/avis`, location };
+					})
+				);
+				allTraiteurs.push(...data);
+			} else if (res2) {
+				const data = await page.$$eval("li.vendorTilePena", (cards) =>
+					cards.map((card) => {
+						const name = card.querySelector(".vendorTilePena__title")?.textContent?.trim();
+						const url = card.querySelector(".vendorTilePena__title")?.getAttribute("href");
+						const location = card.querySelector(".vendorTilePena__location")?.textContent?.replace("·", "").trim();
+						return { name, url, reviewsUrl: `${url}/avis`, location };
+					})
+				);
+				allTraiteurs.push(...data);
+			}
 		}
 
 		// Maintenant, on va récupérer les données de chaque traiteur
 		for (const traiteur of allTraiteurs) {
 			const { url } = traiteur;
 
-			await page.goto(url, { waitUntil: "domcontentloaded", timeout: 5000 });
+			await page.goto(url, { waitUntil: "domcontentloaded", timeout: 10000 });
 
 			// Reviews
 			let rawReviewCount = await page.$eval(".storefrontReviewsSummaryCTA__ratingReviewCounter", (el) => el.textContent.trim()).catch(() => null);
@@ -80,7 +103,7 @@ const scrapData = async () => {
 			traiteur.imageUrl = imageUrl;
 
 			// Extract each traiteur's reviews
-			await page.goto(traiteur.reviewsUrl, { waitUntil: "domcontentloaded", timeout: 5000 });
+			await page.goto(traiteur.reviewsUrl, { waitUntil: "domcontentloaded", timeout: 10000 });
 
 			// Auto Scroll to load the reviews
 			await autoScroll(page);

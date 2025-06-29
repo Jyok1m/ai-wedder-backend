@@ -5,7 +5,7 @@ const scraper = require("../scraper/mariages-net");
 const Venue = require("../models/Venue");
 const Review = require("../models/Review");
 
-router.get("/mariages-net", async (req, res) => {
+router.post("/mariages-net", async (req, res) => {
 	try {
 		console.log("🔄 Démarrage du scraping de mariages.net...");
 		const start = Date.now();
@@ -25,7 +25,8 @@ router.get("/mariages-net", async (req, res) => {
 					averageRating: isNaN(parseFloat(traiteur.avgRating)) ? undefined : parseFloat(traiteur.avgRating),
 					reviewCount: traiteur.reviewCount,
 					imageUrl: traiteur.imageUrl,
-				}
+				},
+				{ new: true, upsert: true, setDefaultsOnInsert: true }
 			);
 
 			// 2. Sauvegarder chaque Review liée
@@ -51,8 +52,8 @@ router.get("/mariages-net", async (req, res) => {
 
 		const duration = ((Date.now() - start) / 1000).toFixed(2);
 		console.log(`✅ Scraping terminé en ${duration} secondes`);
-		console.log(`📊 Total de ${allData.length} lieux traités`);
-		return res.status(200).json({ message: "Scraping et sauvegarde réussis", data: allData });
+		console.log(`📊 Total de ${allTraiteurs.length} lieux traités`);
+		return res.status(200).json({ message: "Scraping et sauvegarde réussis", data: allTraiteurs });
 	} catch (error) {
 		console.error("Erreur lors de l'exécution du scraper :", error);
 		return res.status(500).json({ error: "Erreur interne du serveur" });
